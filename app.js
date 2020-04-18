@@ -5,6 +5,7 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var bcrypt = require('bcrypt');
 const cors = require('cors');
+var cameraRouter = require('./routes/camera');
 
 // passport for authentication by local strategy
 var passport = require("passport");
@@ -17,7 +18,6 @@ require('dotenv').config();
 
 var app = express();
 // perform actions on the collection object
-app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -47,8 +47,10 @@ app.use(cors(corsOptions));
 
 async function main() {
   try {
-    await client.connect();
-    const db = client.db(process.env.DB);
+    if (process.env.CONNECT_DB) {
+        await client.connect();
+        const db = client.db(process.env.DB);
+    }
 
     /*
     Passport Authentication using local strategy
@@ -92,6 +94,8 @@ async function main() {
     ));
 
     app.use('/', indexRouter);
+
+    app.use('/camera/', cameraRouter);
 
     // TODO: change to accommodate other kinds of collection
     app.use('/member/', (req, res, next) => {
